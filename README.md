@@ -4,7 +4,7 @@ A small, beginner-friendly **Domain-Specific Language (DSL) for basic mathematic
 
 **Current version:** Addition and subtraction edition.
 
-PyMathDSL currently supports addition, subtraction, variables, parentheses, and basic linear equation solving. Multiplication, division, modulo, exponentiation, comparisons, and mathematical functions are planned features. Their implementation files are stored in `future_features/` for future integration.
+PyMathDSL currently supports addition, subtraction, variables, parentheses, and basic linear equation solving. Multiplication, division, modulo, exponentiation, comparisons, and mathematical functions are planned features.
 
 ## Table of Contents
 
