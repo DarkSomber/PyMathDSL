@@ -68,21 +68,14 @@ python main.py
 
 Enter mathematical statements interactively. Type `exit` to quit.
 
-### Run a Script
+### Run a Script sample
 
 Execute a `.math` file:
 
 ```bash
-python main.py examples/basic.math
+python main.py basic.math (if inside a folder do parent/child // parent/basic.math)
 ```
 
-### Run the Tests
-
-Run the current test suite:
-
-```bash
-python -m unittest
-```
 
 Each script uses one statement per line. Blank lines are ignored.
 
