@@ -45,8 +45,6 @@ The following features are not available in the current version:
 - Comparisons (`==`, `!=`, `<`, `>`, `<=`, `>=`)
 - Mathematical functions, including square roots, percentages, and geometry calculations
 
-Implementation files, tests, and examples for planned features are stored in `future_features/`.
-
 Using unsupported features in the current version produces a descriptive error.
 
 ## Requirements
