@@ -353,14 +353,13 @@ Search the codebase for `FUTURE` to locate integration points.
 ### General Integration Steps
 
 1. Locate the relevant `FUTURE` comments.
-2. Review the corresponding implementation in `future_features/`.
-3. Integrate the code into the active modules.
-4. Move the associated tests into `tests/`.
-5. Move or adapt the example programs into `examples/`.
-6. Update the grammar and README to reflect the newly supported syntax.
-7. Run the full test suite:
+2. Code the corresponding Feature.
+3. Review the corresponding implementations you added.
+4. Update the grammar and README to reflect the newly supported syntax.
+5. Run a test suite for that feature:
 
    ```bash
+   example code for test:
    python -m unittest
    ```
 
