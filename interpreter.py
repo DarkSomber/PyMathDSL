@@ -5,7 +5,7 @@ Only + and - exist right now (plus let / print / solve). Search for FUTURE to fi
 from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
 from environment import Environment
 from equation_solver import solve_linear
-from errors import MathDomainError, MathDSLError, MathTypeError
+from errors import MathDomainError, MathDSLError, MathTypeError, DivisionByZeroError
 from numeric import TOO_LARGE, check_finite, format_number, is_number
 
 # Every binary operator and what it does. The parser decides precedence (BINARY_LEVELS in
@@ -13,6 +13,10 @@ from numeric import TOO_LARGE, check_finite, format_number, is_number
 OPERATORS = {
     "+": lambda a, b: a + b,
     "-": lambda a, b: a - b,
+    "*": lambda a, b: a * b,
+    "/": lambda a, b: a / b,
+    "%": lambda a, b: a % b,
+    "^": lambda a, b: a ** b,
 }
 # FUTURE (* / % ^ and comparisons): move parked/operators_extra.py next to this file, then
 #     from operators_extra import EXTRA_OPERATORS
@@ -92,7 +96,14 @@ class Interpreter:
 
     def _binary(self, symbol, a, b):
         a, b = self._number(a, f"'{symbol}'"), self._number(b, f"'{symbol}'")
+        if symbol == "^" and abs(b) > 999:  #limitation is nested cases like this (9 ^ 999) ^ 999
+            raise MathDomainError(TOO_LARGE)
         try:
-            return check_finite(OPERATORS[symbol](a, b))   # check_finite matters once floats exist
+            result = OPERATORS[symbol](a, b)
+            if isinstance(result, complex):    #inspects the answers before display
+                raise MathDomainError("A negative number can't be raised to a fractional power.")
+            return check_finite(result)   # check_finite matters once floats exist
         except OverflowError:
             raise MathDomainError(TOO_LARGE) from None
+        except ZeroDivisionError: 
+            raise DivisionByZeroError("Cannot divide by zero") from None

@@ -19,11 +19,10 @@ from lexer import tokenize
 
 # Binary operator precedence, LOOSEST first. Each tuple is one level; operators in a level are
 # left-associative. Adding a level here is all the parser needs for a new left-to-right operator.
-BINARY_LEVELS = [("+", "-")]
-# FUTURE (* / %):      BINARY_LEVELS = [("+", "-"), ("*", "/", "%")]
+BINARY_LEVELS = [("+", "-",), ("*","/","%")]
 # FUTURE (comparisons): put ("==", "!=", "<", ">", "<=", ">=") FIRST (loosest), e.g.
 #                      BINARY_LEVELS = [("==", "!=", "<", ">", "<=", ">="), ("+", "-"), ("*", "/", "%")]
-SUM_LEVEL = BINARY_LEVELS.index(("+", "-"))     # used by `solve`: its sides can't contain comparisons
+SUM_LEVEL = BINARY_LEVELS.index(("+", "-",))     # used by `solve`: its sides can't contain comparisons
 
 END_OF_STATEMENT = ("NEWLINE", "EOF")
 
@@ -111,7 +110,7 @@ class Parser:
         elif tok.kind in ("IDENT", "NUMBER") or self.at_op("("):
             hint = " Did you forget a + or - between them?"
             # FUTURE (*): mention it instead, so `2x` explains itself:
-            # hint = (" Did you forget an operator? Multiplication must be written with * "
+            hint = " Did you forget an operator? Multiplication must be written with * "
             #         "(for example 2*x, not 2x).")
         elif self.at_op(")"):
             hint = " There is a ')' with no matching '('."
@@ -135,18 +134,18 @@ class Parser:
         if self.at_op("-", "+"):
             op = self.advance().value
             return UnaryOp(op, self.unary())
-        return self.primary()
+        return self.power()
 
     # FUTURE (^): in unary() above, change `return self.primary()` to `return self.power()`, add this
     # method, and add "^" to lexer.ONE_CHAR_OPS and interpreter.OPERATORS (via operators_extra).
     # Power sits below unary, so -2^2 means -(2^2), and it is right-associative: 2^3^2 = 2^(3^2).
     #
-    # def power(self):
-    #     base = self.primary()
-    #     if self.at_op("^"):
-    #         self.advance()
-    #         return BinOp("^", base, self.unary())
-    #     return base
+    def power(self):
+        base = self.primary()
+        if self.at_op("^"):
+            self.advance()
+            return BinOp("^", base, self.unary())
+        return base
 
     def primary(self):
         tok = self.advance()
