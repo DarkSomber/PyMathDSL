@@ -50,6 +50,7 @@ class DeclarationError(MathDSLError):
 #   DivisionByZeroError (/ %)   MathTypeError (comparisons)   FunctionError (functions)
 #   EquationError family (solve)
 class DivisionByZeroError(MathDSLError):
+    """Division cannot be divided by zero, it will lead to an undefined answer."""
     category = "Math error"
 
 

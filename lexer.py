@@ -13,7 +13,7 @@ Token = namedtuple("Token", "kind value text line col")
 
 KEYWORDS = {"let", "print", "solve"}
 
-ONE_CHAR_OPS = set("+-()=")
+ONE_CHAR_OPS = set("+-*/%^()=")
 # FUTURE (* / % ^):     add "*/%^"   -> set("+-*/%^()=")
 # FUTURE (functions):   add ","      (separates function arguments)
 # FUTURE (comparisons): add "<>"
@@ -23,7 +23,7 @@ TWO_CHAR_OPS = set()
 
 # Symbols the language will get later. For now they give a friendly "not available yet" message.
 # FUTURE: delete a character from this string when you add it to ONE_CHAR_OPS above.
-NOT_YET = "*/%^,<>"
+NOT_YET = "<>"
 
 DIGITS = "0123456789"
 

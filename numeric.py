@@ -11,6 +11,7 @@ import math
 from errors import MathDomainError
 
 TOO_LARGE = "That number is too large to calculate."
+DIVISION_ZERO = "Cannot divide by zero"
 
 
 def is_number(value):
@@ -28,7 +29,6 @@ def check_finite(value):
     if isinstance(value, float) and not math.isfinite(value):
         raise MathDomainError(TOO_LARGE)
     return value
-
 
 def format_number(value):
     """Display rules: whole numbers print without a decimal point; everything
