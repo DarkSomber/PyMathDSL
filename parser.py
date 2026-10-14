@@ -16,6 +16,7 @@ Search for FUTURE to find where the cut features plug back in.
 from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
 from errors import ParseError
 from lexer import tokenize
+from ast_nodes import Call
 
 # Binary operator precedence, LOOSEST first. Each tuple is one level; operators in a level are
 # left-associative. Adding a level here is all the parser needs for a new left-to-right operator.
@@ -155,7 +156,7 @@ class Parser:
             if self.at_op("("):
                 # FUTURE (functions): replace the next line with `return self.call(tok)` and add
                 # the call() method below (also: "," in lexer.ONE_CHAR_OPS, Call in ast_nodes.py).
-                raise self.error("Functions aren't available yet.", tok)
+                return self.call(tok)    # Replaces the error-raising line
             return Var(tok.value)
         if tok.kind == "OP" and tok.value == "(":
             node = self.expression()
@@ -166,16 +167,16 @@ class Parser:
 
     # FUTURE (functions): add this method (and `from ast_nodes import Call`):
     #
-    # def call(self, name_tok):
-    #     self.advance()                                # the "("
-    #     args = []
-    #     if not self.at_op(")"):
-    #         args.append(self.expression())
-    #         while self.at_op(","):
-    #             self.advance()
-    #             args.append(self.expression())
-    #     self.expect_op(")", " Close the function call with ')' and separate arguments with commas.")
-    #     return Call(name_tok.value, args)
+    def call(self, name_tok):
+        self.advance()                                # the "("
+        args = []
+        if not self.at_op(")"):
+            args.append(self.expression())
+            while self.at_op(","):
+                self.advance()
+                args.append(self.expression())
+        self.expect_op(")", " Close the function call with ')' and separate arguments with commas.")
+        return Call(name_tok.value, args)
 
 
 def parse(source):
