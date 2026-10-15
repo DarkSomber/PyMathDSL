@@ -88,7 +88,15 @@ class Parser:
             left = self.binary(SUM_LEVEL)
             self.expect_op("=", " An equation looks like: solve x + 4 = 14")
             stmt = Solve(left, self.binary(SUM_LEVEL), tok.line)
+        
         elif tok.kind == "IDENT":
+            # Check if this identifier is actually a function call on its own line
+            next_tok = self.tokens[self.pos + 1] if self.pos + 1 < len(self.tokens) else None
+            if next_tok and next_tok.kind == "OP" and next_tok.value == "(":
+                raise self.error(
+                    f"Did you forget 'print'? To use '{tok.text}(...)', "
+                    f"write 'print {tok.text}(...)' or assign it to a variable with 'let'.", tok
+                )
             self.advance()
             if not self.at_op("="):
                 raise self.error(f"'{tok.text}' must be followed by '=' to assign a value, "
