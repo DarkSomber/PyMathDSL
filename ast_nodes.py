@@ -39,8 +39,12 @@ class BinOp:
     left: "Expr"
     right: "Expr"
 
+@dataclass(frozen=True)
+class Call:
+    name: str
+    args: list["Expr"]
 
-Expr = Union[Number, Var, UnaryOp, BinOp]
+Expr = Union[Number, Var, UnaryOp, BinOp, Call]
 
 
 # ---- statements ----

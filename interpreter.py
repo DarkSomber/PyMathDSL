@@ -7,6 +7,9 @@ from environment import Environment
 from equation_solver import solve_linear
 from errors import MathDomainError, MathDSLError, MathTypeError, DivisionByZeroError
 from numeric import TOO_LARGE, check_finite, format_number, is_number
+from functions import call_function, is_function
+from ast_nodes import Call
+from errors import DeclarationError
 
 # Every binary operator and what it does. The parser decides precedence (BINARY_LEVELS in
 # parser.py); this table decides behavior. Values are exact fractions (0.1 + 0.2 is exactly 0.3).
@@ -52,11 +55,8 @@ class Interpreter:
 
     def _execute(self, stmt):
         if isinstance(stmt, Let):
-            # FUTURE (functions): reject variable names that are built-in functions. Also add
-            # `from functions import call_function, is_function` and DeclarationError to the imports:
-            #
-            # if is_function(stmt.name):
-            #     raise DeclarationError(f"'{stmt.name}' is a built-in function name; pick another.")
+            if is_function(stmt.name):
+                raise DeclarationError(f"'{stmt.name}' is a built-in function name; pick another.")
             self.env.declare(stmt.name, self.evaluate(stmt.expr))
         elif isinstance(stmt, Assign):
             self.env.require_declared(stmt.name)
@@ -83,8 +83,8 @@ class Interpreter:
             return self._binary(node.op, self.evaluate(node.left), self.evaluate(node.right))
         # FUTURE (functions): add this branch (and `from functions import call_function`, Call):
         #
-        # if isinstance(node, Call):
-        #     return call_function(node.name, [self.evaluate(arg) for arg in node.args])
+        if isinstance(node, Call):
+             return call_function(node.name, [self.evaluate(arg) for arg in node.args])
         raise MathDSLError("That kind of expression isn't supported.")
 
     @staticmethod

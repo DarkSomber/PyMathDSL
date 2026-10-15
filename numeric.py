@@ -31,8 +31,8 @@ def check_finite(value):
     return value
 
 def format_number(value):
-    """Display rules: whole numbers print without a decimal point; everything
-    else prints as the shortest float that round-trips (Python's repr)."""
+    """Display rules: whole numbers print without a decimal point; fractions 
+    print as fractions; everything else prints as float."""
     if isinstance(value, bool):
         return "true" if value else "false"
     if not is_number(value):
@@ -41,9 +41,9 @@ def format_number(value):
         if value.denominator == 1:
             try:
                 return str(value.numerator)
-            except ValueError:                     # Python refuses to print 4300+ digit integers
+            except ValueError:
                 raise MathDomainError(TOO_LARGE) from None
-        value = to_float(value)
+        return str(value)  # <-- Changed from to_float(value) to str(value)
     if value.is_integer() and abs(value) < 1e16:
         return str(int(value))
     return repr(value)
