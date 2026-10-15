@@ -2,7 +2,7 @@
 
 A small, beginner-friendly **Domain-Specific Language (DSL) for basic mathematics**, written in Python using only the standard library.
 
-PyMathDSL reads programs made of simple math statements, checks them, and runs them with its own interpreter. It supports the six arithmetic operators, variables, parentheses, and solving linear equations with one unknown. Comparisons and built-in functions are planned.
+PyMathDSL reads programs made of simple math statements, checks them, and runs them with its own interpreter. It supports the six arithmetic operators, variables, parentheses, and solving linear equations with one unknown. Comparisons, conditionals, comments, and built-in functions are planned but not implemented yet.
 
 ## Table of Contents
 
@@ -37,9 +37,10 @@ PyMathDSL reads programs made of simple math statements, checks them, and runs t
 
 - Comparisons (`==`, `!=`, `<`, `>`, `<=`, `>=`)
 - Built-in functions (such as square root, percentages, geometry formulas)
-- Comments and conditional statements
+- Comments (`#` is rejected as an unknown character)
+- Conditional statements
 
-Using `<` or `>` today gives a friendly "not available yet" message, and writing a function call gives "Functions aren't available yet."
+Using `<` or `>` today gives a friendly "not available yet" message, and writing a function call such as `sqrt(4)` gives "Functions aren't available yet."
 
 ## Requirements
 
@@ -56,7 +57,9 @@ Clone the repository and open a terminal in the project folder.
 python main.py
 ```
 
-Type statements at the `>>>` prompt. Variables stay available for the whole session. Type `exit` or `quit` to leave (or press `Ctrl+D` / `Ctrl+C`).
+Type statements at the `>>>` prompt. Variables stay available for the whole session. Type `exit` or `quit` to leave (or press `Ctrl+C`, or `Ctrl+D` on macOS/Linux; on Windows, `Ctrl+Z` then `Enter`).
+
+An error in interactive mode is reported and the session continues, so one mistake does not lose your variables.
 
 ### Run a script
 
@@ -159,7 +162,8 @@ Output:
 - Negative numbers are written with the unary minus: `-5`.
 - Arithmetic is exact: `0.1 + 0.2` gives exactly `0.3`.
 - Whole-number results print without a decimal point.
-- Results that are not whole numbers print as decimals. For example, `1 / 3` prints `0.3333333333333333`.
+- Results that are not whole numbers print as decimals. Repeating results are cut off, for example `1 / 3` prints `0.3333333333333333`.
+- Implicit multiplication is not supported: write `2 * x`, not `2x`.
 
 ### Operators and precedence
 
@@ -173,7 +177,7 @@ From highest to lowest precedence:
 | 4 | `*` `/` `%` | left to right |
 | 5 | `+` `-` | left to right |
 
-Examples:
+Examples (the `#` notes are for explanation only; PyMathDSL does not support comments, so leave them out of real programs):
 
 ```text
 print 10 - 4 - 3      # 3, evaluated as (10 - 4) - 3
@@ -182,14 +186,13 @@ print -2 ^ 2          # -4, evaluated as -(2 ^ 2)
 print 2 + 3 * 4       # 14
 ```
 
-(The `#` notes above are for explanation only. Comments are not supported in PyMathDSL programs.)
-
 Operator limits:
 
 - Division or modulo by zero is an error.
 - An exponent larger than 999 in absolute value is rejected as too large.
 - A negative base raised to a fractional power is an error.
 - Results that are too large to calculate are reported as errors.
+- Expressions nested too deeply are reported as errors.
 
 ### Grammar
 
@@ -263,7 +266,7 @@ x = 6
 | No unknown (everything already has a value) | `let x = 2` then `solve x = 2` |
 | No solution | `solve x + 1 = x + 2` |
 | Infinitely many solutions | `solve x = x` |
-| Not linear | `solve x * x = 4` |
+| Not linear | `solve x * x = 4`, `solve 4 / x = 2`, `solve x ^ 2 = 4` |
 
 ## Errors
 
@@ -323,6 +326,7 @@ PyMathDSL/
 ├── numeric.py
 ├── equation_solver.py
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
@@ -337,10 +341,12 @@ PyMathDSL/
 | `errors.py` | Error classes and message formatting |
 | `numeric.py` | Number helpers and output formatting |
 | `equation_solver.py` | Linear equation solver for `solve` |
+| `requirements.txt` | Notes that no external packages are needed |
+| `.gitignore` | Keeps `__pycache__/`, `*.pyc`, and editor leftovers out of Git |
 
 ## Testing
 
-Check the basics by running these in interactive mode and comparing the output:
+There is no automated test suite yet. Check the basics by running these in interactive mode and comparing the output:
 
 | Input | Expected output |
 |---|---|
@@ -349,10 +355,17 @@ Check the basics by running these in interactive mode and comparing the output:
 | `print 2 ^ 3 ^ 2` | `512` |
 | `print -2 ^ 2` | `-4` |
 | `print 0.1 + 0.2` | `0.3` |
+| `print 10 / 4` | `2.5` |
+| `print 7 % 4` | `3` |
 | `solve x + 4 = 14` | `x = 10` |
+| `solve 3 * (x - 1) = 12` | `x = 5` |
 | `print y` | Name error |
 | `print 5 / 0` | Math error |
 | `print 5 +` | Syntax error |
+| `print 2 < 3` | Syntax error ("not available yet") |
+| `solve x * x = 4` | Equation error |
+
+To check script mode, save the first example program as `basic.math`, run `python main.py basic.math`, and confirm it prints `380` and `x = 10`.
 
 If you add automated tests in a `tests/` folder, run them with:
 
@@ -366,8 +379,11 @@ Planned features, in no fixed order:
 
 - **Comparisons:** `==`, `!=`, `<`, `>`, `<=`, `>=`, producing true/false results.
 - **Built-in functions:** such as square root, percentage, and geometry formulas.
+- **Comments:** a way to annotate programs, likely starting with `#`.
+- **Conditional statements:** branching on comparison results (depends on comparisons).
+- **Automated tests:** a `tests/` folder and an `examples/` folder of sample `.math` programs.
 
-Search the source for `FUTURE` comments to find where each feature plugs in. In general:
+Search the source for `FUTURE` comments to find where comparisons and functions plug in. In general:
 
 | Feature | Parts to change |
 |---|---|
