@@ -11,6 +11,7 @@ from functions import call_function, is_function
 from ast_nodes import Call
 from errors import DeclarationError
 
+
 # Every binary operator and what it does. The parser decides precedence (BINARY_LEVELS in
 # parser.py); this table decides behavior. Values are exact fractions (0.1 + 0.2 is exactly 0.3).
 OPERATORS = {

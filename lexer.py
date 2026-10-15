@@ -13,9 +13,9 @@ Token = namedtuple("Token", "kind value text line col")
 
 KEYWORDS = {"let", "print", "solve"}
 
-ONE_CHAR_OPS = set("+-*/%^()=")
+ONE_CHAR_OPS = set("+-*/%^()=,")
 # FUTURE (* / % ^):     add "*/%^"   -> set("+-*/%^()=")
-# FUTURE (functions):   add ","      (separates function arguments)
+# FUTURE (functions):   add ","      (separates function arguments) **ADDED IN
 # FUTURE (comparisons): add "<>"
 
 TWO_CHAR_OPS = set()
