@@ -2,7 +2,7 @@
 
 A small, beginner-friendly **Domain-Specific Language (DSL) for basic mathematics**, written in Python using only the standard library.
 
-PyMathDSL reads programs made of simple math statements, checks them, and runs them with its own interpreter. It supports the six arithmetic operators, variables, parentheses, and solving linear equations with one unknown. Comparisons, conditionals, comments, and built-in functions are planned but not implemented yet.
+PyMathDSL reads programs made of simple math statements, checks them, and runs them with its own interpreter. It supports arithmetic, comparisons, variables, parentheses, and solving linear equations with one unknown. Conditionals, comments, and built-in functions are planned but not implemented yet.
 
 ## Table of Contents
 
@@ -24,6 +24,7 @@ PyMathDSL reads programs made of simple math statements, checks them, and runs t
 
 - **Numbers:** integers and decimals, stored as exact fractions.
 - **Arithmetic:** addition `+`, subtraction `-`, multiplication `*`, division `/`, modulo `%`, and exponentiation `^`.
+- **Comparisons:** equality `==`, inequality `~=`, less than `<`, greater than `>`, less than or equal to `<=`, and greater than or equal to `>=`, producing `true` or `false`.
 - **Unary signs:** `+` and `-` in front of a value, such as `-5`.
 - **Parentheses:** group expressions to control evaluation order.
 - **Variables:** declare with `let`, update with plain assignment.
@@ -35,12 +36,11 @@ PyMathDSL reads programs made of simple math statements, checks them, and runs t
 
 ### Not available yet
 
-- Comparisons (`==`, `!=`, `<`, `>`, `<=`, `>=`)
 - Built-in functions (such as square root, percentages, geometry formulas)
 - Comments (`#` is rejected as an unknown character)
 - Conditional statements
 
-Using `<` or `>` today gives a friendly "not available yet" message, and writing a function call such as `sqrt(4)` gives "Functions aren't available yet."
+Writing a function call such as `sqrt(4)` gives "Functions aren't available yet."
 
 ## Requirements
 
@@ -283,7 +283,7 @@ In interactive mode the line number is left out, since each entry is a single li
 | Syntax error | Invalid character, malformed number, or malformed statement | `print 5 +` |
 | Name error | Undeclared or undefined variable, reserved name used as a variable | `print y` |
 | Math error | Division by zero, impossible operation, or a number too large | `print 5 / 0` |
-| Type error | A true/false value used where a number is needed | (reserved for comparisons) |
+| Type error | A true/false value used where a number is needed | `print (1 = 1) + 2` |
 | Equation error | The `solve` rules above were broken | `solve x + 1 = x + 2` |
 
 ## How It Works
@@ -357,12 +357,17 @@ There is no automated test suite yet. Check the basics by running these in inter
 | `print 0.1 + 0.2` | `0.3` |
 | `print 10 / 4` | `2.5` |
 | `print 7 % 4` | `3` |
+| `print 2 == 2` | `true` |
+| `print 2 ~= 3` | `true` |
+| `print 2 < 3` | `true` |
+| `print 3 > 2` | `true` |
+| `print 2 <= 2` | `true` |
+| `print 3 >= 3` | `true` |
 | `solve x + 4 = 14` | `x = 10` |
 | `solve 3 * (x - 1) = 12` | `x = 5` |
 | `print y` | Name error |
 | `print 5 / 0` | Math error |
 | `print 5 +` | Syntax error |
-| `print 2 < 3` | Syntax error ("not available yet") |
 | `solve x * x = 4` | Equation error |
 
 To check script mode, save the first example program as `basic.math`, run `python main.py basic.math`, and confirm it prints `380` and `x = 10`.
@@ -377,18 +382,17 @@ python -m unittest discover tests
 
 Planned features, in no fixed order:
 
-- **Comparisons:** `==`, `!=`, `<`, `>`, `<=`, `>=`, producing true/false results.
 - **Built-in functions:** such as square root, percentage, and geometry formulas.
 - **Comments:** a way to annotate programs, likely starting with `#`.
 - **Conditional statements:** branching on comparison results (depends on comparisons).
 - **Automated tests:** a `tests/` folder and an `examples/` folder of sample `.math` programs.
 
-Search the source for `FUTURE` comments to find where comparisons and functions plug in. In general:
+Search the source for `FUTURE` comments to find where remaining features plug in. In general:
 
 | Feature | Parts to change |
 |---|---|
 | New binary operator | Token set in `lexer.py`, a row in `BINARY_LEVELS` in `parser.py`, an entry in `OPERATORS` in `interpreter.py` |
-| Comparisons | Multi-character tokens in `lexer.py`, a loosest precedence level in `parser.py`, operator entries in `interpreter.py` |
+| Comparisons | Tokens in `lexer.py`, a loosest precedence level in `parser.py`, operator entries in `interpreter.py` |
 | Functions | A `Call` node in `ast_nodes.py`, call parsing in `parser.py`, evaluation in `interpreter.py`, and handling in `equation_solver.py` |
 
 When you add a feature, update the grammar and examples in this README, and run your tests to confirm that existing behavior has not changed.

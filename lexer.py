@@ -1,8 +1,4 @@
-"""Lexer: source text -> tokens (with line/column). Statements end at NEWLINE.
-
-Only + and - are supported for now. Search the project for FUTURE to find every place where
-the cut features plug back in; the README lists the steps in order.
-"""
+"""Lexer: source text -> tokens (with line/column). Statements end at NEWLINE."""
 from collections import namedtuple
 from fractions import Fraction
 
@@ -13,17 +9,9 @@ Token = namedtuple("Token", "kind value text line col")
 
 KEYWORDS = {"let", "print", "solve"}
 
-ONE_CHAR_OPS = set("+-*/%^()=,")
-# FUTURE (* / % ^):     add "*/%^"   -> set("+-*/%^()=")
-# FUTURE (functions):   add ","      (separates function arguments) **ADDED IN
-# FUTURE (comparisons): add "<>"
+ONE_CHAR_OPS = set("+-*/%^()=,<>")
 
-TWO_CHAR_OPS = set()
-# FUTURE (comparisons): TWO_CHAR_OPS = {"==", "!=", "<=", ">="}
-
-# Symbols the language will get later. For now they give a friendly "not available yet" message.
-# FUTURE: delete a character from this string when you add it to ONE_CHAR_OPS above.
-NOT_YET = "<>"
+TWO_CHAR_OPS = {"==", "~=", "<=", ">="}
 
 DIGITS = "0123456789"
 
@@ -81,9 +69,6 @@ def tokenize(source):
             i += 1
         else:
             col = i - line_start + 1
-            if ch in NOT_YET:
-                raise LexError(f"The symbol '{ch}' isn't available yet. "
-                               "Right now only + and - are supported.", line, col)
             if ch == ".":
                 raise LexError("Unexpected '.'. Write decimals with a digit on both sides, e.g. 0.5", line, col)
             if ch == "!":

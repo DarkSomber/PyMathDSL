@@ -1,7 +1,4 @@
-"""Interpreter: walks the AST and computes results. Nothing is ever passed to eval()/exec().
-
-Only + and - exist right now (plus let / print / solve). Search for FUTURE to find where the cut features plug back in.
-"""
+"""Interpreter: walks the AST and computes results. Nothing is ever passed to eval()/exec()."""
 from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
 from environment import Environment
 from equation_solver import solve_linear
@@ -21,8 +18,14 @@ OPERATORS = {
     "/": lambda a, b: a / b,
     "%": lambda a, b: a % b,
     "^": lambda a, b: a ** b,
+    "==": lambda a, b: a == b,
+    "~=": lambda a, b: a != b,
+    "<": lambda a, b: a < b,
+    ">": lambda a, b: a > b,
+    "<=": lambda a, b: a <= b,
+    ">=": lambda a, b: a >= b,
 }
-# FUTURE (* / % ^ and comparisons): move parked/operators_extra.py next to this file, then
+# FUTURE (* / % ^): move parked/operators_extra.py next to this file, then
 #     from operators_extra import EXTRA_OPERATORS
 #     OPERATORS.update(EXTRA_OPERATORS)            # all of them...
 #     OPERATORS["*"] = EXTRA_OPERATORS["*"]        # ...or just the ones you want
