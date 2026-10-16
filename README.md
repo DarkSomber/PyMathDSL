@@ -36,7 +36,6 @@ PyMathDSL reads programs made of simple math statements, checks them, and runs t
 ### Not available yet
 
 - Comparisons (`==`, `!=`, `<`, `>`, `<=`, `>=`)
-- Built-in functions (such as square root, percentages, geometry formulas)
 - Comments (`#` is rejected as an unknown character)
 - Conditional statements
 
