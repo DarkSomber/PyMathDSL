@@ -24,6 +24,9 @@ def run_file(path, out=sys.stdout, err=sys.stderr):
     except OSError as e:
         print(f"Cannot open '{path}': {e.strerror}", file=err)
         return 1
+    except UnicodeDecodeError:
+        print(f"Cannot read '{path}': it is not a UTF-8 text file.", file=err)
+        return 1
     try:
         statements = parse(source)
     except MathDSLError as e:

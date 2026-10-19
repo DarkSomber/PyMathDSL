@@ -1,12 +1,11 @@
 """Interpreter: walks the AST and computes results. Nothing is ever passed to eval()/exec()."""
-from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
+from ast_nodes import Assign, BinOp, Call, Let, Number, Print, Solve, UnaryOp, Var
 from environment import Environment
 from equation_solver import solve_linear
-from errors import MathDomainError, MathDSLError, MathTypeError, DivisionByZeroError
+from errors import (DeclarationError, DivisionByZeroError, MathDomainError, MathDSLError,
+                    MathTypeError)
 from numeric import TOO_LARGE, check_finite, format_number, is_number
 from functions import call_function, is_function
-from ast_nodes import Call
-from errors import DeclarationError
 
 
 # Every binary operator and what it does. The parser decides precedence (BINARY_LEVELS in
@@ -25,11 +24,8 @@ OPERATORS = {
     "<=": lambda a, b: a <= b,
     ">=": lambda a, b: a >= b,
 }
-# FUTURE (* / % ^): move parked/operators_extra.py next to this file, then
-#     from operators_extra import EXTRA_OPERATORS
-#     OPERATORS.update(EXTRA_OPERATORS)            # all of them...
-#     OPERATORS["*"] = EXTRA_OPERATORS["*"]        # ...or just the ones you want
-# (each also needs its symbol in lexer.ONE_CHAR_OPS / TWO_CHAR_OPS and a level in parser.BINARY_LEVELS)
+# A new binary operator also needs its symbol in lexer.ONE_CHAR_OPS / TWO_CHAR_OPS and a level
+# in parser.BINARY_LEVELS.
 
 
 class Interpreter:
@@ -85,28 +81,31 @@ class Interpreter:
             return -value if node.op == "-" else value
         if isinstance(node, BinOp):
             return self._binary(node.op, self.evaluate(node.left), self.evaluate(node.right))
-        # FUTURE (functions): add this branch (and `from functions import call_function`, Call):
-        #
         if isinstance(node, Call):
-             return call_function(node.name, [self.evaluate(arg) for arg in node.args])
+            args = [self.evaluate(arg) for arg in node.args]
+            try:
+                result = call_function(node.name, args)
+            except OverflowError:       # e.g. areaCircle(10 ^ 200): float overflow inside a function
+                raise MathDomainError(TOO_LARGE) from None
+            return check_finite(result)
         raise MathDSLError("That kind of expression isn't supported.")
 
     @staticmethod
     def _number(value, context):
-        # Needed once comparisons exist: true/false results must not be used as numbers.
+        # true/false results (from comparisons) must not be used as numbers.
         if not is_number(value):
             raise MathTypeError(f"{context} needs numbers, but got {format_number(value)}.")
         return value
 
     def _binary(self, symbol, a, b):
         a, b = self._number(a, f"'{symbol}'"), self._number(b, f"'{symbol}'")
-        if symbol == "^" and abs(b) > 999:  #limitation is nested cases like this (9 ^ 999) ^ 999
+        if symbol == "^" and abs(b) > 999:   # a limit per step; nested cases like (9 ^ 999) ^ 999 are caught later
             raise MathDomainError(TOO_LARGE)
         try:
             result = OPERATORS[symbol](a, b)
-            if isinstance(result, complex):    #inspects the answers before display
+            if isinstance(result, complex):   # a negative base with a fractional exponent
                 raise MathDomainError("A negative number can't be raised to a fractional power.")
-            return check_finite(result)   # check_finite matters once floats exist
+            return check_finite(result)
         except OverflowError:
             raise MathDomainError(TOO_LARGE) from None
         except ZeroDivisionError: 

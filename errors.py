@@ -45,12 +45,8 @@ class DeclarationError(MathDSLError):
 
 
 # --- evaluation --------------------------------------------------------------
-# Used now: MathDomainError (numbers too large). The rest below are for features that are
-# not switched on yet (they are kept here so restoring a feature needs no edits to this file):
-#   DivisionByZeroError (/ %)   MathTypeError (comparisons)   FunctionError (functions)
-#   EquationError family (solve)
 class DivisionByZeroError(MathDSLError):
-    """Division cannot be divided by zero, it will lead to an undefined answer."""
+    """Division or remainder by zero."""
     category = "Math error"
 
 
@@ -88,4 +84,3 @@ class NoSolutionError(EquationError):
 
 class InfiniteSolutionsError(EquationError):
     pass
-

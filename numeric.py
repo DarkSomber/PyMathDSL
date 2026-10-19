@@ -11,7 +11,6 @@ import math
 from errors import MathDomainError
 
 TOO_LARGE = "That number is too large to calculate."
-DIVISION_ZERO = "Cannot divide by zero"
 
 
 def is_number(value):
@@ -25,10 +24,19 @@ def to_float(value):
         raise MathDomainError(TOO_LARGE) from None
 
 
+def to_decimal_fraction(value):
+    """Exact Fraction for a number. A float is read as the decimal it displays
+    (0.1 -> 1/10), not as its binary approximation (3602879701896397/36028797018963968)."""
+    if isinstance(value, Fraction):
+        return value
+    return Fraction(repr(value))
+
+
 def check_finite(value):
     if isinstance(value, float) and not math.isfinite(value):
         raise MathDomainError(TOO_LARGE)
     return value
+
 
 def format_number(value):
     """Display rules: whole numbers print without a decimal point; fractions 
@@ -43,7 +51,10 @@ def format_number(value):
                 return str(value.numerator)
             except ValueError:
                 raise MathDomainError(TOO_LARGE) from None
-        return str(value)  # <-- Changed from to_float(value) to str(value)
+        try:
+            return str(value)
+        except ValueError:      # numerator/denominator beyond Python's integer-to-text limit
+            raise MathDomainError(TOO_LARGE) from None
     if value.is_integer() and abs(value) < 1e16:
         return str(int(value))
     return repr(value)

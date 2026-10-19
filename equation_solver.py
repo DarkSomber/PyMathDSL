@@ -1,17 +1,15 @@
 """Symbolic solver for linear equations with exactly one unknown (used by `solve`).
 
-
 Every side is reduced to the form  a*x + b  (a, b exact Fractions). Names that
 already have a value are treated as constants; any undefined name is an unknown.
-
-Only + and - exist right now, so the `*`, `/`, `^` ... branches inside linear() are not reachable
-yet; they are kept so the solver keeps working unchanged when those operators come back.
+Powers, remainders and function calls that contain the unknown are not linear and are rejected.
 """
 from fractions import Fraction
 
-from ast_nodes import BinOp, Number, UnaryOp, Var
-from errors import (DivisionByZeroError, EquationError, InfiniteSolutionsError,
+from ast_nodes import BinOp, Call, UnaryOp, Var
+from errors import (DivisionByZeroError, EquationError, InfiniteSolutionsError, MathTypeError,
                     MultipleUnknownsError, NoSolutionError, NonlinearEquationError)
+from numeric import format_number, is_number
 
 
 def _names(node):
@@ -21,9 +19,8 @@ def _names(node):
         return _names(node.operand)
     if isinstance(node, BinOp):
         return _names(node.left) + _names(node.right)
-    # FUTURE (functions): once the Call node exists, add `Call` to the import above and:
-    # if isinstance(node, Call):
-    #     return [n for arg in node.args for n in _names(arg)]
+    if isinstance(node, Call):
+        return [n for arg in node.args for n in _names(arg)]
     return []
 
 
@@ -55,6 +52,8 @@ def solve_linear(left, right, evaluate, is_known):
 
     def constant(node):
         value = evaluate(node)
+        if not is_number(value):         # Fraction(True) would silently give 1
+            raise MathTypeError(f"Equations can only use numbers, but got {format_number(value)}.")
         return Fraction(value)           # exact; floats convert exactly
 
     def linear(node):
@@ -67,7 +66,7 @@ def solve_linear(left, right, evaluate, is_known):
             a, b = linear(node.operand)
             return (-a, -b) if node.op == "-" else (a, b)
         if isinstance(node, BinOp):
-            if node.op in "+-":
+            if node.op in ("+", "-"):
                 a1, b1 = linear(node.left)
                 a2, b2 = linear(node.right)
                 return (a1 + a2, b1 + b2) if node.op == "+" else (a1 - a2, b1 - b2)

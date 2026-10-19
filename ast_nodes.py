@@ -1,15 +1,7 @@
 """AST node types. Statements carry the source line for error reporting.
 
-Only the nodes needed for + and - (plus let / print / solve) exist right now.
-
-FUTURE (functions): add this node, then use it in parser.py and interpreter.py
-    @dataclass(frozen=True)
-    class Call:
-        name: str
-        args: List["Expr"]
-    ...and add Call to the Expr union below.
-
-(* / % ^ and comparisons need no new node: they are BinOp nodes with a different `op`.)
+Expressions are Number, Var, UnaryOp, BinOp and Call. Every binary operator, arithmetic or
+comparison, is a BinOp with a different `op`.
 """
 from dataclasses import dataclass
 from fractions import Fraction
@@ -35,14 +27,16 @@ class UnaryOp:
 
 @dataclass(frozen=True)
 class BinOp:
-    op: str                      # "+" or "-" for now
+    op: str                      # + - * / % ^ == ~= < > <= >=
     left: "Expr"
     right: "Expr"
 
+
 @dataclass(frozen=True)
-class Call:
+class Call:                      # built-in function call, e.g. sqrt(16)
     name: str
     args: list["Expr"]
+
 
 Expr = Union[Number, Var, UnaryOp, BinOp, Call]
 

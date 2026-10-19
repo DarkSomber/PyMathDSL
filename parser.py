@@ -6,24 +6,25 @@
                | "print" expression
                | "solve" expression "=" expression ;     (* sides are sums; see SUM_LEVEL *)
     expression = comparison ;
-    comparison = sum { ( "==" | "~=" | "<" | ">" | "<=" | ">=" ) sum } ;
+    comparison = sum [ ( "==" | "~=" | "<" | ">" | "<=" | ">=" ) sum ] ;   (* not chainable *)
     sum        = product { ( "+" | "-" ) product } ;
     product    = unary { ( "*" | "/" | "%" ) unary } ;
     unary      = ( "-" | "+" ) unary | power ;
     power      = primary [ "^" unary ] ;
-    primary    = NUMBER | IDENT | "(" expression ")" ;
+    primary    = NUMBER | IDENT | call | "(" expression ")" ;
+    call       = IDENT "(" [ expression { "," expression } ] ")" ;
     NUMBER     = DIGIT { DIGIT } [ "." DIGIT { DIGIT } ] ;
     IDENT      = ( LETTER | "_" ) { LETTER | DIGIT | "_" } ;
 
 """
-from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
+from ast_nodes import Assign, BinOp, Call, Let, Number, Print, Solve, UnaryOp, Var
 from errors import ParseError
 from lexer import tokenize
-from ast_nodes import Call
 
 # Binary operator precedence, LOOSEST first. Each tuple is one level; operators in a level are
 # left-associative. Adding a level here is all the parser needs for a new left-to-right operator.
 BINARY_LEVELS = [("==", "~=", "<", ">", "<=", ">="), ("+", "-",), ("*","/","%")]
+COMPARISON_LEVEL = 0                              # the loosest level; comparisons can't be chained
 SUM_LEVEL = BINARY_LEVELS.index(("+", "-",))     # used by `solve`: its sides can't contain comparisons
 
 END_OF_STATEMENT = ("NEWLINE", "EOF")
@@ -118,10 +119,7 @@ class Parser:
         if tok.kind == "KEYWORD":
             hint = " Put each statement on its own line."
         elif tok.kind in ("IDENT", "NUMBER") or self.at_op("("):
-            hint = " Did you forget a + or - between them?"
-            # FUTURE (*): mention it instead, so `2x` explains itself:
             hint = " Did you forget an operator? Multiplication must be written with * "
-            #         "(for example 2*x, not 2x).")
         elif self.at_op(")"):
             hint = " There is a ')' with no matching '('."
         raise self.error(f"Unexpected {self.describe(tok)}.{hint}")
@@ -138,6 +136,9 @@ class Parser:
         while self.at_op(*BINARY_LEVELS[level]):
             op = self.advance().value
             node = BinOp(op, node, self.binary(level + 1))
+            if level == COMPARISON_LEVEL and self.at_op(*BINARY_LEVELS[level]):
+                raise self.error("Comparisons can't be chained, so something like 1 < 2 < 3 isn't "
+                                 "allowed. Compare two values at a time.")
         return node
 
     def unary(self):
@@ -146,11 +147,8 @@ class Parser:
             return UnaryOp(op, self.unary())
         return self.power()
 
-    # FUTURE (^): in unary() above, change `return self.primary()` to `return self.power()`, add this
-    # method, and add "^" to lexer.ONE_CHAR_OPS and interpreter.OPERATORS (via operators_extra).
-    # Power sits below unary, so -2^2 means -(2^2), and it is right-associative: 2^3^2 = 2^(3^2).
-    #
     def power(self):
+        # Power sits below unary, so -2^2 means -(2^2); it is right-associative: 2^3^2 = 2^(3^2).
         base = self.primary()
         if self.at_op("^"):
             self.advance()
@@ -163,9 +161,7 @@ class Parser:
             return Number(tok.value)
         if tok.kind == "IDENT":
             if self.at_op("("):
-                # FUTURE (functions): replace the next line with `return self.call(tok)` and add
-                # the call() method below (also: "," in lexer.ONE_CHAR_OPS, Call in ast_nodes.py).
-                return self.call(tok)    # Replaces the error-raising line
+                return self.call(tok)
             return Var(tok.value)
         if tok.kind == "OP" and tok.value == "(":
             node = self.expression()
@@ -174,8 +170,6 @@ class Parser:
         raise self.error(f"I expected a number, a variable, or '(' but found "
                          f"{self.describe(tok)}.", tok)
 
-    # FUTURE (functions): add this method (and `from ast_nodes import Call`):
-    #
     def call(self, name_tok):
         self.advance()                                # the "("
         args = []

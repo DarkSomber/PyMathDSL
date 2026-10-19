@@ -73,7 +73,8 @@ def tokenize(source):
                 raise LexError("Unexpected '.'. Write decimals with a digit on both sides, e.g. 0.5", line, col)
             if ch == "!":
                 raise LexError("Unexpected '!'.", line, col)
-            raise LexError(f"I don't understand the character '{ch}'. "
-                           "Only numbers, names, + - ( ) and = are allowed.", line, col)
+            raise LexError(f"I don't understand the character '{ch}'. I only understand numbers, "
+                           "names, the symbols + - * / % ^ ( ) , = < > and the comparisons "
+                           "== ~= <= >=.", line, col)
     add("EOF", None, "", n)
     return tokens

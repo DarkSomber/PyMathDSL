@@ -8,7 +8,7 @@ class Environment:
         self._vars = {}
 
     @staticmethod
-    def _validate(name, value):
+    def _validate(value):
         if not is_number(value):
             raise MathTypeError(f"Variables can only hold numbers, but this gave "
                                 f"{format_number(value)}. Use print to see true/false results.")
@@ -19,13 +19,13 @@ class Environment:
 
     def declare(self, name, value):
         """`let name = value` (re-declaring an existing name just replaces its value)."""
-        self._validate(name, value)
+        self._validate(value)
         self._vars[name] = value
 
     def assign(self, name, value):
         """`name = value` (the name must already be declared)."""
         self.require_declared(name)
-        self._validate(name, value)
+        self._validate(value)
         self._vars[name] = value
 
     def require_declared(self, name):
