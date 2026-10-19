@@ -5,13 +5,16 @@
                | IDENT "=" expression
                | "print" expression
                | "solve" expression "=" expression ;     (* sides are sums; see SUM_LEVEL *)
-    expression = unary { ( "+" | "-" ) unary } ;
-    unary      = ( "-" | "+" ) unary | primary ;
+    expression = comparison ;
+    comparison = sum { ( "==" | "~=" | "<" | ">" | "<=" | ">=" ) sum } ;
+    sum        = product { ( "+" | "-" ) product } ;
+    product    = unary { ( "*" | "/" | "%" ) unary } ;
+    unary      = ( "-" | "+" ) unary | power ;
+    power      = primary [ "^" unary ] ;
     primary    = NUMBER | IDENT | "(" expression ")" ;
     NUMBER     = DIGIT { DIGIT } [ "." DIGIT { DIGIT } ] ;
     IDENT      = ( LETTER | "_" ) { LETTER | DIGIT | "_" } ;
 
-Search for FUTURE to find where the cut features plug back in.
 """
 from ast_nodes import Assign, BinOp, Let, Number, Print, Solve, UnaryOp, Var
 from errors import ParseError
@@ -20,9 +23,7 @@ from ast_nodes import Call
 
 # Binary operator precedence, LOOSEST first. Each tuple is one level; operators in a level are
 # left-associative. Adding a level here is all the parser needs for a new left-to-right operator.
-BINARY_LEVELS = [("+", "-",), ("*","/","%")]
-# FUTURE (comparisons): put ("==", "!=", "<", ">", "<=", ">=") FIRST (loosest), e.g.
-#                      BINARY_LEVELS = [("==", "!=", "<", ">", "<=", ">="), ("+", "-"), ("*", "/", "%")]
+BINARY_LEVELS = [("==", "~=", "<", ">", "<=", ">="), ("+", "-",), ("*","/","%")]
 SUM_LEVEL = BINARY_LEVELS.index(("+", "-",))     # used by `solve`: its sides can't contain comparisons
 
 END_OF_STATEMENT = ("NEWLINE", "EOF")
